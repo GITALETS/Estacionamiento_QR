@@ -49,6 +49,7 @@ PUERTO_ARDUINO = None     # None = detectar solo. Ej: "COM3"
 BAUDIOS = 9600
 PUERTO_WEB = 8000
 IP_LAPTOP = None          # None = detectar sola. Ej: "192.168.137.1"
+URL_PUBLICA = None        # Opcional: URL de túnel público (ej: "https://xxxx.trycloudflare.com" o ngrok)
 MAX_LUGARES = 20
 ESPERA_ENTRADA = 20       # segundos máximos antes de subir la pluma de entrada
 ARCHIVO_TICKETS = "tickets.json"
@@ -409,9 +410,15 @@ async def principal():
             loop.call_soon_threadsafe(s.celular_abrio, codigo)
 
     crear_servidor(base, pantalla, avisar_celular)
-    url_base = f"http://{ip_local()}:{PUERTO_WEB}"
+    if URL_PUBLICA:
+        url_base = URL_PUBLICA.rstrip("/")
+    else:
+        url_base = f"http://{ip_local()}:{PUERTO_WEB}"
+
     log(f"Pantalla de entrada: http://localhost:{PUERTO_WEB}/pantalla  (ábrela y presiona F11)")
-    log(f"Los celulares abrirán los tickets en {url_base}")
+    log(f"Los celulares abrirán los tickets en: {url_base}")
+    if not URL_PUBLICA and (ip_local() == "127.0.0.1" or ip_local().startswith("192.168.")):
+        log("AVISO: Para que el celular abra el QR, debe estar en la misma red Wi-Fi o usa un túnel (ej. Cloudflare/ngrok).")
 
     puerto = encontrar_puerto()
     if not puerto:
